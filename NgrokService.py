@@ -153,7 +153,7 @@ def main():
             time.sleep(HEALTHCHECK_INTERVAL)
             stat = healthcheck()
             if stat == STAT_TERMINATE:
-                terminate()
+                # terminate will be called in finnaly block
                 break
             elif stat == STAT_DEAD:
                 start()
