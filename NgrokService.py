@@ -8,13 +8,12 @@ import json
 import pprint
 from ciscosparkapi import CiscoSparkAPI
 
-APP_BASE_PATH = '/home/pi/NgrokProject'
+APP_BASE_PATH = os.path.dirname(os.path.abspath(__file__))
 PID_FILE_PATH = APP_BASE_PATH + '/data/NGROK.pid'
 END_FILE_PATH = APP_BASE_PATH + '/data/NGROK_END'
 TOKENS_FILE_PATH = APP_BASE_PATH + '/conf/.tokens.json'
 YML_FILE_PATH = APP_BASE_PATH + '/conf/ngrok.yml'
 PGREP_NAME = 'ngrok'
-EXEC_NGROK_CMD = 'nohup {0}/bin/ngrok start --config {1} web ssh &'.format(APP_BASE_PATH, YML_FILE_PATH)
 STAT_TERMINATE = -1 
 STAT_DEAD = 0
 STAT_ALIVE = 1
@@ -25,8 +24,13 @@ HEALTHCHECK_INTERVAL = 10# sec
 def getUri():
     ret = dict()
     headers = {'Content-Type': 'application/json'}
-    apiUrl = 'http://localhost:4040/api/tunnels'
-    apiRet = requests.get(url=apiUrl, headers=headers).json()
+    # delete tunnel not in use
+    deleteUrl = 'http://localhost:4040/api/tunnels/web (http)'
+    requests.delete(url=deleteUrl, headers=headers)
+
+    time.sleep(1) # wait to reflected delete request
+    tunnelsUrl = 'http://localhost:4040/api/tunnels'
+    apiRet = requests.get(url=tunnelsUrl, headers=headers).json()
     for tunnel in apiRet.get('tunnels'):
         ret[tunnel.get('proto')] = tunnel.get('public_url')
     return ret
@@ -108,8 +112,8 @@ def getProcessIid(procname):
     return ret
 
 def start():
-    os.system(EXEC_NGROK_CMD) 
-
+    execcmd = 'nohup {0}/bin/ngrok start --config {1} web ssh &'.format(APP_BASE_PATH, YML_FILE_PATH)
+    os.system(execcmd) 
 
     pid = getProcessIid(PGREP_NAME)
     f = open(PID_FILE_PATH, 'w')
