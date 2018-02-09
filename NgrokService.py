@@ -41,7 +41,7 @@ def sendSparkMessage(message, type='text'):
     jf.close()
 
     api = CiscoSparkAPI(access_token=tokens.get('notify_bot_token'))
-    toPerson = 'yujisuz@cisco.com'
+    toPerson = tokens.get('notify_dest') 
 
     if type == 'markdown':
         api.messages.create(toPersonEmail=toPerson, markdown=message)
